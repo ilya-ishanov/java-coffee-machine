@@ -5,6 +5,10 @@ import kz.solvatech.testtask.repository.IngredientsRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 @AllArgsConstructor
 public class IngredientsService {
@@ -51,6 +55,16 @@ public class IngredientsService {
         ingredientsRepository.save(ingredients);
 
         return "Ингредиент: " + ingredients.getName() + ", Кол-во осталось: " + ingredients.getQuantity();
+    }
+
+    public void addAllIngredients() {
+        List<Long> ingredientsIds = List.of(1L, 2L, 3L, 4L);
+
+        for (Long id : ingredientsIds) {
+            Ingredients ingredient = ingredientsRepository.findById(id).orElseThrow(() -> new RuntimeException("Ингредиент не найден: " + id));
+            ingredient.setQuantity(1000L);
+            ingredientsRepository.save(ingredient);
+        }
     }
 
     private void addIngredientsValidation(Long number) {

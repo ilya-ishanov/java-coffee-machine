@@ -31,5 +31,9 @@ public class IngredientsController {
         return ingredientsService.addChocolate(chocolateMl);
     }
 
+    @PostMapping("/addAll")
+    public void addAllIngredients() {
+        ingredientsService.addAllIngredients();
+    }
 
 }
