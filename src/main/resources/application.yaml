@@ -1,0 +1,4 @@
+operational:
+  holidaysUrl: https://date.nager.at/api/v3/PublicHolidays/2025/KZ
+  workStart: "08:00"
+  workEnd: "17:00"

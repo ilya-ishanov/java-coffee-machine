@@ -2,9 +2,11 @@ package kz.solvatech.testtask.service;
 
 import kz.solvatech.testtask.dto.PublicHolidayDto;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,9 +18,17 @@ import java.util.*;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class OperationalService {
-    public static final String URL = "https://date.nager.at/api/v3/PublicHolidays/2025/KZ";
+    @Value("${operational.holidaysUrl}")
+    private String holidaysUrl;
+
+    @Value("${operational.workStart}")
+    private String workStartRaw;
+
+    @Value("${operational.workEnd}")
+    private String workEndRaw;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final Set<LocalDate> holidays = new HashSet<>();
     private static final Logger logger = LoggerFactory.getLogger(OperationalService.class);
@@ -33,8 +43,11 @@ public class OperationalService {
         LocalTime currentTime = now.toLocalTime();
         LocalDate currentDate = now.toLocalDate();
 
-        return !currentTime.isBefore(LocalTime.of(8, 0))
-                && !currentTime.isAfter(LocalTime.of(17, 0))
+        LocalTime workStart = LocalTime.parse(workStartRaw);
+        LocalTime workEnd = LocalTime.parse(workEndRaw);
+
+        return !currentTime.isBefore(workStart)
+                && !currentTime.isAfter(workEnd)
                 && !isWeekend(currentDate)
                 && !isHoliday(currentDate);
     }
@@ -54,7 +67,7 @@ public class OperationalService {
     public List<LocalDate> fetchHolidays() {
         log.info("Fetching holidays from API for year");
         logger.info("Fetching holidays from external API");
-        PublicHolidayDto[] publicHolidays = restTemplate.getForObject(URL, PublicHolidayDto[].class);
+        PublicHolidayDto[] publicHolidays = restTemplate.getForObject(holidaysUrl, PublicHolidayDto[].class);
         if (publicHolidays != null) {
             return Arrays.stream(publicHolidays).map(PublicHolidayDto::getDate).toList();
         }
