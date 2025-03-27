@@ -1,7 +1,10 @@
 package kz.solvatech.testtask.service;
 
+import kz.solvatech.testtask.entity.IngredientType;
 import kz.solvatech.testtask.entity.Ingredients;
+import kz.solvatech.testtask.exception.IngredientNotFoundException;
 import kz.solvatech.testtask.repository.IngredientsRepository;
+import kz.solvatech.testtask.validator.IngredientsValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +16,12 @@ import java.util.Map;
 @AllArgsConstructor
 public class IngredientsService {
     private IngredientsRepository ingredientsRepository;
+    private IngredientsValidator ingredientsValidator;
 
     public String addWater(Long waterMl) {
-        addIngredientsValidation(waterMl);
+        ingredientsValidator.validateIngredients(waterMl);
 
-        Ingredients ingredients = ingredientsRepository.findById(1L).orElseThrow(RuntimeException::new);
-        System.out.println(ingredients.getName());
+        Ingredients ingredients = ingredientsRepository.findByType(IngredientType.WATER).orElseThrow(() -> new IngredientNotFoundException("Вода не найдена"));
         ingredients.setQuantity(waterMl + ingredients.getQuantity());
         ingredientsRepository.save(ingredients);
 
@@ -26,9 +29,9 @@ public class IngredientsService {
     }
 
     public String addCoffee(Long coffeeMl) {
-        addIngredientsValidation(coffeeMl);
+        ingredientsValidator.validateIngredients(coffeeMl);
 
-        Ingredients ingredients = ingredientsRepository.findById(2L).orElseThrow(RuntimeException::new);
+        Ingredients ingredients = ingredientsRepository.findByType(IngredientType.COFFEE).orElseThrow(() -> new IngredientNotFoundException("Кофе не найден"));
         ingredients.setQuantity(coffeeMl + ingredients.getQuantity());
         ingredientsRepository.save(ingredients);
 
@@ -36,10 +39,9 @@ public class IngredientsService {
     }
 
     public String addMilk(Long milkMl) {
-        addIngredientsValidation(milkMl);
+        ingredientsValidator.validateIngredients(milkMl);
 
-        Ingredients ingredients = ingredientsRepository.findById(3L).orElseThrow(RuntimeException::new);
-        System.out.println(ingredients.getName());
+        Ingredients ingredients = ingredientsRepository.findByType(IngredientType.MILK).orElseThrow(() -> new IngredientNotFoundException("Молоко не найдено"));
         ingredients.setQuantity(milkMl + ingredients.getQuantity());
         ingredientsRepository.save(ingredients);
 
@@ -47,10 +49,9 @@ public class IngredientsService {
     }
 
     public String addChocolate(Long chocolateMl) {
-        addIngredientsValidation(chocolateMl);
+        ingredientsValidator.validateIngredients(chocolateMl);
 
-        Ingredients ingredients = ingredientsRepository.findById(4L).orElseThrow(RuntimeException::new);
-        System.out.println(ingredients.getName());
+        Ingredients ingredients = ingredientsRepository.findByType(IngredientType.CHOCOLATE).orElseThrow(() -> new IngredientNotFoundException("Шоколад не найден"));
         ingredients.setQuantity(chocolateMl + ingredients.getQuantity());
         ingredientsRepository.save(ingredients);
 
@@ -58,19 +59,13 @@ public class IngredientsService {
     }
 
     public void addAllIngredients() {
-        List<Long> ingredientsIds = List.of(1L, 2L, 3L, 4L);
+        List<Long> ingredientsIds = List.of(IngredientType.WATER.getId(), IngredientType.COFFEE.getId(),
+                IngredientType.MILK.getId(), IngredientType.CHOCOLATE.getId());
 
         for (Long id : ingredientsIds) {
-            Ingredients ingredient = ingredientsRepository.findById(id).orElseThrow(() -> new RuntimeException("Ингредиент не найден: " + id));
+            Ingredients ingredient = ingredientsRepository.findById(id).orElseThrow(() -> new IngredientNotFoundException("Ингредиент не найден: " + id));
             ingredient.setQuantity(1000L);
             ingredientsRepository.save(ingredient);
         }
     }
-
-    private void addIngredientsValidation(Long number) {
-        if (number < 0 || number > 1000) {
-            throw new IllegalArgumentException("Ингридиенты должны быть не меньше нуля и не больше 1000 мл");
-        }
-    }
-
 }

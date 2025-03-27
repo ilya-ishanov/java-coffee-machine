@@ -5,6 +5,8 @@ import kz.solvatech.testtask.entity.Ingredients;
 import kz.solvatech.testtask.entity.Order;
 import kz.solvatech.testtask.entity.Recipe;
 import kz.solvatech.testtask.entity.RecipeIngredients;
+import kz.solvatech.testtask.exception.IngredientNotFoundException;
+import kz.solvatech.testtask.exception.NotEnoughIngredients;
 import kz.solvatech.testtask.exception.WorkingHoursException;
 import kz.solvatech.testtask.mapper.OrderMapper;
 import kz.solvatech.testtask.repository.IngredientsRepository;
@@ -32,7 +34,7 @@ public class OrderService {
     public String findPopularRecipe() {
         Long recipeId = orderRepository.findPopularRecipe();
         Recipe recipe = recipeRepository.findById(recipeId)
-                .orElseThrow(() -> new IllegalArgumentException("Рецепт с id " + recipeId + " не найден" ));
+                .orElseThrow(() -> new IngredientNotFoundException("Рецепт с id " + recipeId + " не найден" ));
         return recipe.getName();
     }
 
@@ -54,10 +56,10 @@ public class OrderService {
 
         recipeIngredients.forEach(ingredient -> {
             Ingredients ingredients = ingredientsRepository.findById(ingredient.getIngredientsId())
-                    .orElseThrow(() -> new IllegalArgumentException("ингредиент не найден"));
+                    .orElseThrow(() -> new IngredientNotFoundException("ингредиент не найден"));
 
             if (ingredients.getQuantity() < ingredient.getAmount()) {
-                throw new IllegalArgumentException("Не достаточно ингридиента: " + ingredients.getName()
+                throw new NotEnoughIngredients("Не достаточно ингридиента: " + ingredients.getName()
                         + " " + (ingredient.getAmount() - ingredients.getQuantity()) + " Ml"
                         + " для приготовления " + recipe.getName());
             }

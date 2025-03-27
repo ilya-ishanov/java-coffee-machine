@@ -23,17 +23,8 @@ public class CoffeeMachineController {
     }
 
     @PostMapping("/recipe")
-    public ResponseEntity<RecipeDto> addRecipe(@RequestBody RecipeDto recipeDto,
-                                               Long waterMl, Long coffeeMl,
-                                               @RequestParam(required = false) Long milkMl,
-                                               @RequestParam(required = false) Long chocolateMl) {
-
-        if (waterMl == null || coffeeMl == null) {
-            throw new IllegalArgumentException("Вода и кофе два обязательных параметра");
-        }
-
+    public ResponseEntity<RecipeDto> addRecipe(@RequestBody RecipeDto recipeDto) {
         RecipeDto savedRecipe = recipeService.addRecipe(recipeDto);
-        recipeService.addIngredients(waterMl, coffeeMl, milkMl, chocolateMl);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRecipe);
     }
 

@@ -1,11 +1,17 @@
 package kz.solvatech.testtask.service;
 
 import kz.solvatech.testtask.dto.RecipeDto;
+import kz.solvatech.testtask.dto.RecipeIngredientsDto;
+import kz.solvatech.testtask.entity.IngredientType;
+import kz.solvatech.testtask.entity.Ingredients;
 import kz.solvatech.testtask.entity.Recipe;
 import kz.solvatech.testtask.entity.RecipeIngredients;
+import kz.solvatech.testtask.exception.IngredientNotFoundException;
 import kz.solvatech.testtask.mapper.RecipeMapper;
+import kz.solvatech.testtask.repository.IngredientsRepository;
 import kz.solvatech.testtask.repository.RecipeIngredientsRepository;
 import kz.solvatech.testtask.repository.RecipeRepository;
+import kz.solvatech.testtask.validator.RecipeValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,29 +26,27 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final RecipeMapper recipeMapper;
     private final RecipeIngredientsRepository recipeIngredientsRepository;
-    private Long recipeId;
+    private final IngredientsRepository ingredientsRepository;
+    private final RecipeValidator recipeValidator;
 
     public RecipeDto addRecipe(RecipeDto recipeDto) {
+        recipeValidator.recipeValidator(recipeDto);
+
         Recipe recipe = recipeMapper.toEntity(recipeDto);
         Recipe savedRecipe = recipeRepository.save(recipe);
-        recipeId = savedRecipe.getId();
-        return recipeMapper.toDto(savedRecipe);
-    }
 
-    public void addIngredients(Long waterMl, Long coffeeMl, Long milkMl, Long chocolateMl) {
-        Map<Long, Long> ingredients = new HashMap<>();
+        for (RecipeIngredientsDto ingredientDto : recipeDto.getIngredients()) {
+            Ingredients ingredients = ingredientsRepository.findById(ingredientDto.getIngredientsId())
+                    .orElseThrow(() -> new IngredientNotFoundException("Ингредиент не найден"));
 
-        if (waterMl != null) ingredients.put(1L, waterMl);
-        if (coffeeMl != null) ingredients.put(2L, coffeeMl);
-        if (milkMl != null) ingredients.put(3L, milkMl);
-        if (chocolateMl != null) ingredients.put(4L, chocolateMl);
+            RecipeIngredients recipeIngredients = new RecipeIngredients();
+            recipeIngredients.setRecipeId(savedRecipe.getId());
+            recipeIngredients.setIngredientsId(ingredients.getId());
+            recipeIngredients.setAmount(ingredientDto.getAmount());
 
-        if (waterMl == null || coffeeMl == null) {
-            throw new IllegalArgumentException("Вода и кофе два обязательных параметра");
+            recipeIngredientsRepository.save(recipeIngredients);
         }
 
-        ingredients.forEach((ingredientId, amount) -> {
-            recipeIngredientsRepository.save(new RecipeIngredients(recipeId, ingredientId, amount));
-        });
+        return recipeMapper.toDto(savedRecipe);
     }
 }

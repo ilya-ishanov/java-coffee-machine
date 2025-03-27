@@ -17,10 +17,4 @@ public class RecipeIngredients {
     private Long recipeId;
     private Long ingredientsId;
     private Long amount;
-
-    public RecipeIngredients(Long recipeId, Long ingredientsId, Long amount) {
-        this.recipeId = recipeId;
-        this.ingredientsId = ingredientsId;
-        this.amount = amount;
-    }
 }
